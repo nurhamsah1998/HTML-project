@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Random Movement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body style="padding: 0; margin: 0">
+    <div
+      id="container"
+      style="display: flex; flex-direction: column; height: 100dvh"
+    ></div>
+    <script type="module">
+      import randomBoxMaking from "./box_making.js";
+      import creatingBlocking from "./create_blocking.js";
+      import addEventListener from "./add_event_listener.js";
+      import routerCompas from "./router_compas.js";
+      import { pickRandom } from "./helper.js";
+
+      const windowWidth = window.screen.width;
+      const windowHeight = window.screen.height;
+      const container = document.getElementById("container");
+      const rowCount = 30;
+      const columnCount = 30;
+      const blockingCount = 290;
+      const speedRunner = 90;
+      const blockingColor = "bg-blue-900";
+      const nonBlockingColor = "bg-white";
+      const actionMoveColor = "bg-green-500";
+      let initialPosition = { col: 0, row: 0 };
+      let previousePosition = { col: 0, row: 0 };
+
+      /// GENERATE RANDOM BOX
+      randomBoxMaking(columnCount, container, rowCount, nonBlockingColor);
+
+      /// CREATE BLOCKING
+      creatingBlocking(
+        blockingCount,
+        nonBlockingColor,
+        blockingColor,
+        rowCount,
+        columnCount
+      );
+
+      /// RUNNING
+      const timing = () => {
+        const timeInterval = setInterval(() => {
+          try {
+            const rowElementStart = document.getElementById(
+              `col-${initialPosition.col}-row-${initialPosition.row}`
+            );
+            const rowElementEnd = document.getElementById(
+              `col-${previousePosition.col}-row-${previousePosition.row}`
+            );
+
+            if (
+              initialPosition.col === columnCount ||
+              initialPosition.row === rowCount
+            ) {
+              clearInterval(timeInterval);
+              return;
+            }
+
+            if (!rowElementStart.className.includes(blockingColor)) {
+              previousePosition.col = initialPosition.col;
+              previousePosition.row = initialPosition.row;
+              /// MAPPING UNBLOCKED ROUTER
+              const compas = routerCompas(
+                initialPosition,
+                nonBlockingColor,
+                rowCount,
+                columnCount
+              );
+              let routes = [];
+              try {
+                for (const key in compas) {
+                  if (compas[key].isOpenGate && !compas[key].isBorder) {
+                    routes.push(key);
+                  }
+                }
+                const randomPick = pickRandom(routes);
+                if (Boolean(routes.toString())) {
+                  compas[routes[randomPick]].action();
+                }
+                rowElementStart.className = rowElementStart.className.replace(
+                  nonBlockingColor,
+                  actionMoveColor
+                );
+                rowElementEnd.className = rowElementEnd.className.replace(
+                  actionMoveColor,
+                  nonBlockingColor
+                );
+              } catch (error) {
+                clearInterval(timeInterval);
+              }
+            }
+          } catch (error) {
+            console.log(error);
+            clearInterval(timeInterval);
+          }
+        }, speedRunner);
+      };
+
+      /// ADD EVENT LISTENER
+      addEventListener(
+        columnCount,
+        initialPosition,
+        timing,
+        rowCount,
+        nonBlockingColor,
+        actionMoveColor
+      );
+    </script>
+  </body>
+</html>
