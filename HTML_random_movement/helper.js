@@ -16,9 +16,12 @@ const gate = ({ col, row, nonBlockingColor, columnCount, rowCount, type }) => {
     left: `col-${col}-row-${row === 0 ? 0 : row - 1}`,
     right: `col-${col}-row-${row === rowCount - 1 ? rowCount - 1 : row + 1}`,
   };
-  return document
-    .getElementById(typeRotation[type])
-    .className.includes(nonBlockingColor);
+  return (
+    document
+      .getElementById(typeRotation[type])
+      .className.includes(nonBlockingColor) ||
+    document.getElementById(typeRotation[type]).className.includes("bg-red-")
+  );
 };
 
 export { pickRandom, gate };

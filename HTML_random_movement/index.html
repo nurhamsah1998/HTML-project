@@ -21,16 +21,27 @@
       const windowWidth = window.screen.width;
       const windowHeight = window.screen.height;
       const container = document.getElementById("container");
-      const rowCount = 30;
+      const rowCount = 60;
       const columnCount = 30;
-      const blockingCount = 290;
-      const speedRunner = 90;
-      const blockingColor = "bg-blue-900";
+      const blockingCount = 670;
+      const speedRunner = 1;
+      const blockingColor = "border-[1px] border-white bg-blue-700";
       const nonBlockingColor = "bg-white";
-      const actionMoveColor = "bg-green-500";
+      const actionMoveColor = "rounded-full bg-green-700";
       let initialPosition = { col: 0, row: 0 };
       let previousePosition = { col: 0, row: 0 };
 
+      const variantHistoryRoute = {
+        "bg-red-100": `bg-red-200`,
+        "bg-red-200": `bg-red-300`,
+        "bg-red-300": `bg-red-400`,
+        "bg-red-400": `bg-red-500`,
+        "bg-red-500": `bg-red-600`,
+        "bg-red-600": `bg-red-700`,
+        "bg-red-700": `bg-red-800`,
+        "bg-red-800": `bg-red-900`,
+        "bg-red-900": `bg-red-900`,
+      };
       /// GENERATE RANDOM BOX
       randomBoxMaking(columnCount, container, rowCount, nonBlockingColor);
 
@@ -45,7 +56,7 @@
 
       /// RUNNING
       const timing = () => {
-        const timeInterval = setInterval(() => {
+        const timeInterval = setTimeout(() => {
           try {
             const rowElementStart = document.getElementById(
               `col-${initialPosition.col}-row-${initialPosition.row}`
@@ -58,7 +69,7 @@
               initialPosition.col === columnCount ||
               initialPosition.row === rowCount
             ) {
-              clearInterval(timeInterval);
+              clearTimeout(timeInterval);
               return;
             }
 
@@ -72,6 +83,7 @@
                 rowCount,
                 columnCount
               );
+
               let routes = [];
               try {
                 for (const key in compas) {
@@ -83,21 +95,39 @@
                 if (Boolean(routes.toString())) {
                   compas[routes[randomPick]].action();
                 }
+                const findHistoryRoute = rowElementStart.className
+                  .split(" ")
+                  .find((item) => item.includes("bg-red-"));
+
+                if (findHistoryRoute) {
+                  rowElementStart.className = rowElementStart.className.replace(
+                    findHistoryRoute,
+                    actionMoveColor
+                  );
+                  rowElementEnd.className = rowElementEnd.className.replace(
+                    findHistoryRoute,
+                    variantHistoryRoute[findHistoryRoute]
+                  );
+                }
                 rowElementStart.className = rowElementStart.className.replace(
                   nonBlockingColor,
                   actionMoveColor
                 );
+
                 rowElementEnd.className = rowElementEnd.className.replace(
                   actionMoveColor,
-                  nonBlockingColor
+                  findHistoryRoute
+                    ? variantHistoryRoute[findHistoryRoute]
+                    : `bg-red-100`
                 );
+                timing();
               } catch (error) {
-                clearInterval(timeInterval);
+                clearTimeout(timeInterval);
               }
             }
           } catch (error) {
             console.log(error);
-            clearInterval(timeInterval);
+            clearTimeout(timeInterval);
           }
         }, speedRunner);
       };
